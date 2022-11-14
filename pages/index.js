@@ -3,15 +3,33 @@ import config from "../config.json"
 import styled from "styled-components"
 import Menu from "../src/components/Menu"
 import { StyledTimeline } from "../src/components/Timeline"
+import { videoService } from "../src/services/VideoService"
 
 function HomePage() {
-   
+    const service = videoService()
     const [filterValue, setFilterValue] = React.useState('')
-    
+    const [playlists, setPlaylists] = React.useState({})
+
+    React.useEffect(() => {
+        service
+            .GetAllVideos()
+            .then((allData) => {
+                console.log(allData.data)
+                const newPlaylists = { ...playlists }
+                allData.data.forEach((video) => {
+                    if (!newPlaylists[video.playlist]) {
+                        newPlaylists[video.playlist] = []
+                    }
+                    newPlaylists[video.playlist].push(video)
+                })
+                setPlaylists(newPlaylists)
+            })
+    }, [])
+
     return (
         <>
             <div>
-                <Menu filterValue={filterValue} setFilterValue={setFilterValue}/>
+                <Menu filterValue={filterValue} setFilterValue={setFilterValue} />
                 <Banner />
                 <Header />
                 <Timeline searchValue={filterValue} playlists={config.playlists} />
@@ -24,7 +42,7 @@ export default HomePage
 
 const StyledHeader = styled.div`
 
-    background-color: ${({theme}) => theme.backgroundLevel1};
+    background-color: ${({ theme }) => theme.backgroundLevel1};
   
     img {
       width: 80px;
@@ -70,14 +88,14 @@ function Banner() {
     return (
         <StyledBanner>
             <div className="banner">
-                
+
             </div>
         </StyledBanner>
     )
 }
 
 
-function Timeline({searchValue, ...props}) {
+function Timeline({ searchValue, ...props }) {
 
     const playlistNames = Object.keys(props.playlists)
 
